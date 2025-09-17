@@ -1,0 +1,83 @@
+@startuml c4.container.tobe
+!include C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+AddElementTag("backendContainer", $fontColor=$ELEMENT_FONT_COLOR, $bgColor="#335DA5", $shape=EightSidedShape())
+AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
+AddRelTag("sync/async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DottedLine())
+
+title TO-BE Container diagram for CinemaAbyss company
+
+Person(customer, "Пользователь", "Ноутбуки, смарт ТВ, мобильные устройства")
+System_Ext(kafka, "Kafka", "Асинхронные интеграции между сервисами")
+System_Ext(payments_ext, "Платежные системы", "Внешние системы для платежных интеграций")
+System_Ext(recomendations_ext, "Подбор рекомендаций", "Внешняя система для подбора рекомендаций")
+
+System_Boundary(movies_service, "Movies Service") {
+    Container(movies_api, "API управления фильмами", "JavaScript", "Управление фильмами, добавление отзывов, формирование избранного")  
+    Container(movies_consumer, "Обработка событий", "Go, Docker Container", "Обработка публикаций о новых подборках рейтингов", $tags="backendContainer") 
+    ContainerDb(movies_db, "База данных фильмов", "Postgres SQL", "Хранение данных о фильмах и их подборках")
+    ContainerDb(mono_s3, "S3", "Хранение иконок, картинок, превью фильмов и т.п.") 
+}
+
+System_Boundary(payments_service, "Payments Service") {
+    Container(payments_api, "API управления платежами", "JavaScript", "API управления платежами")  
+    Container(payments_integrations, "Processing module", "Go, Docker Container", "Processing, интеграция с внешними системами", $tags="backendContainer")
+    Container(payments_consumer, "Обработка событий", "Go, Docker Container", "Обработка событий о изменениях подписок", $tags="backendContainer") 
+}
+
+System_Boundary(account_service, "Accounts service") {
+    Container(account_api, "AccountPortal Api", "JavaScript", "Регистрация, управление аккаунтами")
+    ContainerDb(account_db, "Accounts Database", "Postgres SQL", "Хранение данных об аккаунтах") 
+}
+
+System_Boundary(sub_service, "Subscribtions service") {
+    Container(sub_api, "Subscribtions Api", "JavaScript", "Управление подписками") 
+    ContainerDb(sub_db, "Subscribtions Database", "Postgres SQL", "Хранение данных о подписках") 
+}
+
+System_Boundary(proxy_service, "Proxy Service (API Gateway)") {  
+    Container(proxy_api, "Аpi для клиентских систем", "Istio", "Аутентификация, маршрутизация запросов")
+}
+
+Rel_Neighbor(sub_api, sub_db, "Чтение/запись данных по подпискам", "sync, JDBC")
+Rel_Neighbor(account_api, account_db, "Чтение/запись данных по аккаунтам", "sync, JDBC")
+Rel_Neighbor(movies_api, movies_db, "Чтение/запись данных по фильмам", "sync, JDBC")
+Rel_Neighbor(movies_consumer, movies_db, "Чтение/запись данных по фильмам", "sync, JDBC")
+
+Rel(customer, proxy_api, "регистрируется, смотрит фильмы, оставляет отзывы", "sync, HTTPS")
+
+Rel(proxy_api, account_api, "управление аккаунтом", "sync, HTTPS")
+Rel(proxy_api, movies_api, "получение данных фильмов", "sync, HTTPS")
+Rel(proxy_api, payments_api, "платежи за фильмы и подписки", "sync, HTTPS")
+Rel(proxy_api, sub_api, "управление подписками", "sync, HTTPS")
+
+Rel(payments_integrations, payments_ext, "платежи за фильмы и подписки", "sync/async, HTTPS", $tags="sync/async")
+
+Rel(movies_service, kafka, "События фильмов (просмотр, оценка, добавление)", "async", $tags="async")
+Rel(account_service, kafka, "События пользователей (регистрация, вход)", "async", $tags="async")
+Rel(payments_service, kafka, "События платежей (успешные, неудачные)", "async", $tags="async")
+Rel(sub_service, kafka, "События подписок (регистрация, отмена, продление)", "async", $tags="async")
+
+
+Rel(kafka, movies_consumer, "События фильмов", "async", $tags="async")
+Rel(kafka, payments_consumer, "События изменения подписок", "async", $tags="async")
+
+Rel(recomendations_ext, kafka, "Подборки рекомендаций", "async", $tags="async")
+
+' Rel_Back_Neighbor(control_panel_api, devices_db, "Чтение/запись данных по устройствам", "sync, JDBC")
+
+' Rel_Back(metrics_collector, device_gateway, "получает метрики", "async, JSON/HTTPS", $tags="async")
+' Rel_Neighbor(control_panel_api, device_gateway, "Запись данных с утройств", "sync, JDBC")
+' Rel_Back_Neighbor(metrics_db, metrics_collector, "Чтение/запись метрик", "sync, JDBC")
+' Rel(device, device_gateway, "управляет, подключает, собирает метрики", "sync/async, XML/HTTPS", $tags="sync/async")
+
+' Rel_Back_Neighbor(account_api, account_db, "Чтение/запись данных по аккаунтам", "sync, JDBC")
+' Rel_Back(customer, email_system, "Sends e-mails to")
+' Rel_Back(email_system, backend_api, "Sends e-mails using", "sync, SMTP")
+' Rel_Neighbor(backend_api, banking_system, "Uses123", "sync/async, XML/HTTPS", $tags="sync/async")
+' Rel(spa, backend_api, "Uses3", "async, JSON/HTTPS", $tags="async")
+' Rel(mobile_app, backend_api, "Uses2", "async, JSON/HTTPS", $tags="async")
+
+'SHOW_LEGEND()
+@enduml
