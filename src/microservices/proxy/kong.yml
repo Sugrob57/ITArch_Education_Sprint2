@@ -4,9 +4,9 @@ upstreams:
   - name: movies-upstream
     targets:
       - target: monolith:8080
-        weight: 100
+        weight: 70
       - target: movies-service:8081
-        weight: 0
+        weight: 30
 
 services:
   - name: monolith

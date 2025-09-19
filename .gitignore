@@ -1,7 +1,7 @@
 # Go specific
 *.exe
 *.exe~
-*.dll
+#*.dll
 *.so
 *.dylib
 *.test
@@ -137,6 +137,7 @@ terraform.tfstate.backup
 *.exe
 *.exe~
 *.dll
+!Confluent.Kafka.dll
 *.so
 *.dylib
 
@@ -154,3 +155,9 @@ go.work
 
 # Postman tests reports
 tests/postman/reports/
+
+#.net
+**/packages/*
+!**/packages/repositories.config
+[Bb]in/
+[Oo]bj/

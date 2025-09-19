@@ -83,21 +83,21 @@ services:
       - cinemaabyss-network
 
   # Events Microservice
-#  events-service:
-#    build:
-#      context: ./src/microservices/events
-#      dockerfile: Dockerfile
-#    container_name: cinemaabyss-events-service
-#    depends_on:
-#      - postgres
-#      - kafka
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      PORT: 8082
-#      KAFKA_BROKERS: kafka:9092
-#    networks:
-#      - cinemaabyss-network
+  events-service:
+    build:
+      context: ./src/microservices/events
+      dockerfile: Dockerfile
+    container_name: cinemaabyss-events-service
+    depends_on:
+      - postgres
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      KAFKA_BROKERS: kafka:9092
+    networks:
+      - cinemaabyss-network
 
   # Proxy Service (API Gateway)
   proxy-service:
@@ -106,7 +106,7 @@ services:
     depends_on:
       - monolith
       - movies-service
-      #- events-service
+      - events-service
     ports:
       - "8000:8000" # входящие запросы
       - "8001:8001" # админка
@@ -149,6 +149,20 @@ services:
     environment:
       SWAGGER_JSON: /api/openapi.yaml
       BASE_URL: /docs
+    networks:
+      - cinemaabyss-network
+
+  postman-tests:
+    build:
+      context: ./tests/postman
+      dockerfile: Dockerfile
+    container_name: postman-tests
+    depends_on:
+      - postgres
+      - kafka
+      - monolith
+      - movies-service
+      - events-service
     networks:
       - cinemaabyss-network
 

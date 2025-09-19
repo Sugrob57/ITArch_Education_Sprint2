@@ -1,0 +1,14 @@
+﻿{
+  "profiles": {
+		"http": {
+			"commandName": "Project",
+			"dotnetRunMessages": true,
+			"launchBrowser": true,
+			"launchUrl": "api/v1/events",
+			"applicationUrl": "http://localhost:8081",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			}
+		}
+  }
+}
