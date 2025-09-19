@@ -94,13 +94,13 @@ jobs:
             type=ref,event=branch
             latest
 
-      - name: Build and push Movies Service Docker image
+      - name: Build and push Events Service Docker image
         uses: docker/build-push-action@v4
         with:
           context: ./src/microservices/events
           push: true
-          tags: ${{ steps.events-movies.outputs.tags }}
-          labels: ${{ steps.events-movies.outputs.labels }}
+          tags: ${{ steps.meta-events.outputs.tags }}
+          labels: ${{ steps.meta-events.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
