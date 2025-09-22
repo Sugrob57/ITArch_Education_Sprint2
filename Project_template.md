@@ -54,30 +54,11 @@ Cкриншот состояния топиков Kafka http://localhost:8090
   - [proxy-service/service.yaml](/src/kubernetes/helm/templates/proxy-service/service.yaml)
   - [proxy-service/configmap.yaml](/src/kubernetes/helm/templates/proxy-service/configmap.yaml)
 
-```bash
-kubectl delete all --all -n cinemaabyss
-kubectl delete  namespace cinemaabyss
-```
-Запустите 
-```bash
-helm install cinemaabyss .\src\kubernetes\helm --namespace cinemaabyss --create-namespace
-```
-Если в процессе будет ошибка
-```code
-[2025-04-08 21:43:38,780] ERROR Fatal error during KafkaServer startup. Prepare to shutdown (kafka.server.KafkaServer)
-kafka.common.InconsistentClusterIdException: The Cluster ID OkOjGPrdRimp8nkFohYkCw doesn't match stored clusterId Some(sbkcoiSiQV2h_mQpwy05zQ) in meta.properties. The broker is trying to join the wrong cluster. Configured zookeeper.connect may be wrong.
-```
+Cкриншот развертывания helm:
+![Cкриншот развертывания helm](/docs/screens/helm.release.staus.cinemaabyss.png) 
 
-Проверьте развертывание:
-```bash
-kubectl get pods -n cinemaabyss
-minikube tunnel
-```
-
-Потом вызовите 
-https://cinemaabyss.example.com/api/movies
-и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
-
+Cкриншот вывода https://cinemaabyss.example.com/api/movies :
+![Cкриншот вывода api/movies](/docs/screens/helm.api.movies.response.png) 
 
 # Задание 5
 Компания планирует активно развиваться и для повышения надежности, безопасности, реализации сетевых паттернов типа Circuit Breaker и канареечного деплоя вам как архитектору необходимо развернуть istio и настроить circuit breaker для monolith и movies сервисов.
