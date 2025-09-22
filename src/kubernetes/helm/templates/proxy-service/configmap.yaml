@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  kong.yml: |
+{{ .Files.Get "kong.yml" | indent 4 }}

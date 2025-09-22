@@ -8,8 +8,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: kubernetes.docker.internal
-    #cinemaabyss.example.com
+    #- host: kubernetes.docker.internal
+    - host: cinemaabyss.example.com
       http:
         paths:
           - path: /
@@ -19,3 +19,10 @@ spec:
                 name: proxy-service
                 port:
                   number: 8000
+          - path: /api/events
+            pathType: Prefix
+            backend:
+              service:
+                name: events-service
+                port:
+                  number: 8082
