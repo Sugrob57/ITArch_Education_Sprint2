@@ -8,95 +8,95 @@ data:
     _format_version: "3.0"
 
     upstreams:
-    - name: movies-upstream
+      - name: movies-upstream
         targets:
-        - target: monolith:8080
+          - target: monolith:8080
             weight: 70
-        - target: movies-service:8081
+          - target: movies-service:8081
             weight: 30
 
     services:
-    - name: monolith
+      - name: monolith
         url: http://monolith:8080
         routes:
-        - name: monolith-route
+          - name: monolith-route
             strip_path: false
             paths:
-            - /api/users
-            - /api/subscribtions
-            - /api/payments
+              - /api/users
+              - /api/subscribtions
+              - /api/payments
 
-    # Movies health-check (обходит балансировку)
-    - name: movies-health
+      # Movies health-check (обходит балансировку)
+      - name: movies-health
         url: http://movies-service:8081
         routes:
-        - name: movies-health-route
+          - name: movies-health-route
             strip_path: false
             paths:
-            - /api/movies/health
+              - /api/movies/health
 
-    - name: movies
+      - name: movies
         host: movies-upstream   # используем upstream
         routes:
-        - name: movies-route
+          - name: movies-route
             strip_path: false
             paths:
-            - /api/movies
+              - /api/movies
 
-    - name: events-health
+      - name: events-health
         url: http://events-service:8081
         routes:
-        - name: events-health-route
+          - name: events-health-route
             strip_path: false
             paths:
-            - /api/events/health
+              - /api/events/health
 
-    - name: events
+      - name: events
         url: http://events-service:8082
         routes:
-        - name: events-route
+          - name: events-route
             strip_path: false
             paths:
-            - /api/events
+              - /api/events
 
-    # Kong health (возвращает 200 прямо из Kong)
-    - name: kong-health
+      # Kong health (возвращает 200 прямо из Kong)
+      - name: kong-health
         url: http://example.com   # фиктивный, не используется
         routes:
-        - name: kong-health-route
+          - name: kong-health-route
             paths:
-            - /health
+              - /health
         plugins:
-        - name: request-termination
+          - name: request-termination
             config:
-            status_code: 200
-            content_type: application/json
-            body: '{"status":"Strangler Fig Proxy is healthy"}'
+              status_code: 200
+              content_type: application/json
+              body: '{"status":"Strangler Fig Proxy is healthy"}'
 
-    - name: swagger-ui
+      - name: swagger-ui
         url: http://swagger-ui:8080
         routes:
-        - name: swagger-ui-route
+          - name: swagger-ui-route
             strip_path: false
             paths:
-            - /docs
+              - /docs
 
 
     plugins:
-    - name: cors
+      - name: cors
         config:
-        origins:
+          origins:
             - "*"
-        methods:
+          methods:
             - GET
             - POST
             - PUT
             - DELETE
             - PATCH
             - OPTIONS
-        headers:
+          headers:
             - Accept
             - Authorization
             - Content-Type
-        credentials: true
-        max_age: 3600
+          credentials: true
+          max_age: 3600

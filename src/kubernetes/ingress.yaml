@@ -8,10 +8,11 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: cinemaabyss.example.com
+    - host: kubernetes.docker.internal
+    #cinemaabyss.example.com
       http:
         paths:
-          - path: /api
+          - path: /
             pathType: Prefix
             backend:
               service:

@@ -49,26 +49,14 @@ spec:
             name: cinemaabyss-secrets
         resources:
           limits:
-            cpu: "300m"
-            memory: "256Mi"
+            cpu: "1000m"
+            memory: "1Gi"
           requests:
-            cpu: "100m"
-            memory: "128Mi"
+            cpu: "400m"
+            memory: "512Mi"
         volumeMounts:
         - name: kong-config
           mountPath: /kong
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
       restartPolicy: Always
       volumes:
         - name: kong-config
@@ -84,6 +72,10 @@ spec:
   selector:
     app: proxy-service
   ports:
-  - port: 8000
-    targetPort: 8000
+  - name: http
+    port: 8000
+    targetPort: 8000   # порт, на котором Kong слушает HTTP-трафик
+  - name: admin
+    port: 8001
+    targetPort: 8001   # админка Kong
   type: ClusterIP
