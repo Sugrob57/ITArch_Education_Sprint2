@@ -16,7 +16,7 @@ services:
         strip_path: false
         paths:
           - /api/users
-          - /api/subscribtions
+          - /api/subscriptions
           - /api/payments
 
   # Movies health-check (обходит балансировку)
