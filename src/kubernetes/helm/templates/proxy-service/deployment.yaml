@@ -1,12 +1,15 @@
+{{- if .Values.proxyService.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: proxy-service
-  namespace: cinemaabyss
+  namespace: {{ .Values.global.namespace }}
   labels:
     app: proxy-service
+    app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.proxyService.replicas }}
   selector:
     matchLabels:
       app: proxy-service
@@ -22,9 +25,10 @@ spec:
     spec:
       containers:
       - name: proxy-service
-        image: kong:3.8
+        image: {{ .Values.proxyService.image.repository }}:{{ .Values.proxyService.image.tag }}
+        imagePullPolicy: {{ .Values.proxyService.image.pullPolicy }}
         ports:
-        - containerPort: 8000
+        - containerPort: {{ .Values.proxyService.service.targetPort }}
         env:
         - name: KONG_DATABASE 
           value: "off"
@@ -39,7 +43,7 @@ spec:
         - name: KONG_ADMIN_ERROR_LOG
           value: /dev/stderr
         - name: KONG_PROXY_LISTEN
-          value: "0.0.0.0:8000"
+          value: "0.0.0.0:{{ .Values.proxyService.service.targetPort }}"
         - name: KONG_ADMIN_LISTEN
           value: "0.0.0.0:8001"
         envFrom:
@@ -48,34 +52,27 @@ spec:
         - secretRef:
             name: cinemaabyss-secrets
         resources:
-          limits:
-            cpu: "1000m"
-            memory: "1Gi"
-          requests:
-            cpu: "400m"
-            memory: "512Mi"
+          {{- toYaml .Values.proxyService.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.proxyService.service.targetPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.proxyService.service.targetPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
         volumeMounts:
         - name: kong-config
           mountPath: /kong
       restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson
       volumes:
         - name: kong-config
           configMap:
             name: kong-config
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: proxy-service
-  namespace: cinemaabyss
-spec:
-  selector:
-    app: proxy-service
-  ports:
-  - name: http
-    port: 8000
-    targetPort: 8000   # порт, на котором Kong слушает HTTP-трафик
-  - name: admin
-    port: 8001
-    targetPort: 8001   # админка Kong
-  type: ClusterIP
+{{- end }}

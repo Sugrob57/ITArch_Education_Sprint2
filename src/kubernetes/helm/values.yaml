@@ -5,7 +5,7 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6ICJjM1ZuY205aU5UYzZaMmh3WDBwRWQxcElRVnAzWkcxV1UwWXdZelZHUjJOS2JXZEZWMFJCY1ZWc1ZqUTRiM28yVXc9PSIKCQl9Cgl9LAoJImNyZWRzU3RvcmUiOiAiZGVza3RvcCIsCgkiY3VycmVudENvbnRleHQiOiAiZGVza3RvcC1saW51eCIKfQ==
 # Database configuration
 database:
   host: postgres
@@ -33,7 +33,7 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
+    repository: ghcr.io/sugrob57/itarch_education_sprint2/monolith
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -53,19 +53,19 @@ monolith:
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
-    tag: latest
-    pullPolicy: Always
+    repository: kong
+    tag: "3.8"
+    pullPolicy: IfNotPresent
   replicas: 1
   resources:
     limits:
-      cpu: 300m
-      memory: 256Mi
+      cpu: "1000m"
+      memory: "1Gi"
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: "400m"
+      memory: "512Mi"
   service:
-    port: 80
+    port: 8000
     targetPort: 8000
     type: ClusterIP
 
@@ -73,7 +73,7 @@ proxyService:
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
+    repository: ghcr.io/sugrob57/itarch_education_sprint2/movies-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -93,7 +93,7 @@ moviesService:
 eventsService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
+    repository: ghcr.io/sugrob57/itarch_education_sprint2/events-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -125,7 +125,7 @@ kafka:
       cpu: 200m
       memory: 512Mi
   persistence:
-    enabled: true
+    enabled: false
     size: 5Gi
     accessMode: ReadWriteOnce
   topics:
@@ -164,7 +164,7 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    kubernetes.io/ingress.class: nginx
+    #kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
     - host: cinemaabyss.example.com
@@ -172,11 +172,15 @@ ingress:
         - path: /
           pathType: Prefix
           service: proxy-service
-          port: 80
+          port: 8000
         - path: /api/events
           pathType: Prefix
           service: events-service
           port: 8082
+        - path: /api/movies
+          pathType: Prefix
+          service: movies-service
+          port: 8081
 
 # Application configuration
 config:

@@ -1,0 +1,95 @@
+_format_version: "3.0"
+
+upstreams:
+  - name: movies-upstream
+    targets:
+      - target: monolith:8080
+        weight: 70
+      - target: movies-service:8081
+        weight: 30
+
+services:
+  - name: monolith
+    url: http://monolith:8080
+    routes:
+      - name: monolith-route
+        strip_path: false
+        paths:
+          - /api/users
+          - /api/subscribtions
+          - /api/payments
+
+  # Movies health-check (обходит балансировку)
+  - name: movies-health
+    url: http://movies-service:8081
+    routes:
+      - name: movies-health-route
+        strip_path: false
+        paths:
+          - /api/movies/health
+
+  - name: movies
+    host: movies-upstream   # используем upstream
+    routes:
+      - name: movies-route
+        strip_path: false
+        paths:
+          - /api/movies
+
+  - name: events-health
+    url: http://events-service:8082
+    routes:
+      - name: events-health-route
+        strip_path: false
+        paths:
+          - /api/events/health
+
+  - name: events
+    url: http://events-service:8082
+    routes:
+      - name: events-route
+        strip_path: false
+        paths:
+          - /api/events
+
+  # Kong health (возвращает 200 прямо из Kong)
+  - name: kong-health
+    url: http://example.com   # фиктивный, не используется
+    routes:
+      - name: kong-health-route
+        paths:
+          - /health
+    plugins:
+      - name: request-termination
+        config:
+          status_code: 200
+          content_type: application/json
+          body: '{"status":"Strangler Fig Proxy is healthy"}'
+
+  - name: swagger-ui
+    url: http://swagger-ui:8080
+    routes:
+      - name: swagger-ui-route
+        strip_path: false
+        paths:
+          - /docs
+
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+      credentials: true
+      max_age: 3600
