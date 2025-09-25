@@ -8,7 +8,6 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    #- host: kubernetes.docker.internal
     - host: cinemaabyss.example.com
       http:
         paths:

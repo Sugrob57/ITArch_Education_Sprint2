@@ -4,9 +4,9 @@ upstreams:
   - name: movies-upstream
     targets:
       - target: monolith:8080
-        weight: 70
+        weight: 100
       - target: movies-service:8081
-        weight: 30
+        weight: 0
 
 services:
   - name: monolith
@@ -49,14 +49,6 @@ services:
           status_code: 200
           content_type: application/json
           body: '{"status":"Strangler Fig Proxy is healthy"}'
-
-  - name: swagger-ui
-    url: http://swagger-ui:8080
-    routes:
-      - name: swagger-ui-route
-        strip_path: false
-        paths:
-          - /docs
 
 plugins:
   - name: cors

@@ -1,0 +1,65 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: movies-destinationrule
+  namespace: cinemaabyss
+spec:
+  host: movies-service  # общий хост для трафика
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 10
+      http:
+        http1MaxPendingRequests: 10
+        maxRequestsPerConnection: 100
+    outlierDetection:
+      consecutive5xxErrors: 3        # если подряд >=3 ошибок
+      interval: 5s                   # проверять каждые 5 секунд
+      baseEjectionTime: 30s          # исключать проблемный backend на 30 сек
+      maxEjectionPercent: 100
+  subsets:
+  - name: proxy-service              # proxy перенаправляет 100% трафика в  монолит 
+    labels:
+      app: proxy-service
+  - name: movies-service
+    labels:
+      app: movies-service
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: movies-virtualservice
+  namespace: cinemaabyss
+spec:
+  hosts:
+  - movies-service      # тот же хост, что и в DestinationRule
+  http:
+  - route:
+    - destination:
+        host: movies-service
+        subset: movies-service
+      weight: 100             # по-умолчанию всех шлем в микросервис
+    - destination:
+        host: movies-service
+        subset: proxy-service
+      weight: 0               # в монолит шлем только в случае сбоев
+
+# istio-gateway подменяет базовый ingress-controller, 
+# потому это не применимо для миникуба с пробрасыванием через tunnel
+# но сохраню для  черновика внешнего истио
+#---
+#apiVersion: networking.istio.io/v1alpha3
+#kind: Gateway
+#metadata:
+#  name: cinema-gateway
+#  namespace: cinemaabyss
+#spec:
+#  selector:
+#    istio: ingressgateway
+#  servers:
+#  - port:
+#      number: 80
+#      name: http
+#      protocol: HTTP
+#    hosts:
+#    - "*"
